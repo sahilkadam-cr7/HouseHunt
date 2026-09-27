@@ -22,6 +22,20 @@ function Home() {
     loadProperties();
   }, []);
 
+  const getImageUrl = (property, index = 0) => {
+    if (property.images && property.images.length > index) {
+      const image = property.images[index];
+
+      if (image.startsWith("/uploads")) {
+        return `http://localhost:5000${image}`;
+      }
+
+      return image;
+    }
+
+    return "/images/house1.jpg";
+  };
+
   const bookProperty = async (e) => {
     e.preventDefault();
     setMessage("");
@@ -47,7 +61,9 @@ function Home() {
       <section className="hero">
         <div className="hero-content">
           <h1>Find Your Perfect Home</h1>
-          <p>Discover comfortable and affordable properties with HouseHunt.</p>
+          <p>
+            Discover comfortable and affordable properties with HouseHunt.
+          </p>
         </div>
       </section>
 
@@ -57,16 +73,17 @@ function Home() {
       <h2>Available Properties</h2>
 
       <div className="property-grid">
-        {properties.map((property, index) => (
+        {properties.map((property) => (
           <div className="property-card" key={property._id}>
             <img
-              src={`/images/house${(index % 3) + 1}.jpg`}
+              src={getImageUrl(property)}
               alt={property.title}
               className="property-image"
             />
 
             <div className="property-content">
               <h3>{property.title}</h3>
+
               <p>{property.description}</p>
 
               <p>

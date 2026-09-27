@@ -13,7 +13,6 @@ const createProperty = async (req, res) => {
       bathrooms,
     } = req.body;
 
-    // Check required fields
     if (
       !title ||
       !description ||
@@ -28,7 +27,10 @@ const createProperty = async (req, res) => {
       });
     }
 
-    // Create property
+    const images = req.files
+      ? req.files.map((file) => `/uploads/${file.filename}`)
+      : [];
+
     const property = await Property.create({
       title,
       description,
@@ -37,6 +39,7 @@ const createProperty = async (req, res) => {
       propertyType,
       bedrooms,
       bathrooms,
+      images,
       owner: req.user.userId,
     });
 
@@ -65,7 +68,6 @@ const getProperties = async (req, res) => {
 
     let query = {};
 
-    // Search properties by title, description, or location
     if (search) {
       query.$or = [
         { title: { $regex: search, $options: "i" } },
@@ -74,7 +76,6 @@ const getProperties = async (req, res) => {
       ];
     }
 
-    // Filter properties by location
     if (location) {
       query.location = {
         $regex: location,
@@ -82,7 +83,6 @@ const getProperties = async (req, res) => {
       };
     }
 
-    // Filter properties by minimum price
     if (minPrice) {
       query.price = {
         ...query.price,
@@ -90,7 +90,6 @@ const getProperties = async (req, res) => {
       };
     }
 
-    // Filter properties by maximum price
     if (maxPrice) {
       query.price = {
         ...query.price,
@@ -98,7 +97,6 @@ const getProperties = async (req, res) => {
       };
     }
 
-    // Filter properties by property type
     if (propertyType) {
       query.propertyType = {
         $regex: propertyType,
@@ -127,7 +125,6 @@ const getPropertyById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Check if the ID is a valid MongoDB ObjectId
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({
         message: "Invalid property ID",
@@ -159,7 +156,6 @@ const getPropertyById = async (req, res) => {
 
 const updateProperty = async (req, res) => {
   try {
-
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({
         message: "Invalid property ID",
@@ -174,7 +170,6 @@ const updateProperty = async (req, res) => {
       });
     }
 
-    // Check if the logged-in user owns the property
     if (property.owner.toString() !== req.user.userId) {
       return res.status(403).json({
         message: "Access denied",
@@ -191,7 +186,6 @@ const updateProperty = async (req, res) => {
       bathrooms,
     } = req.body;
 
-    // Update only fields that were provided
     if (title !== undefined) property.title = title;
     if (description !== undefined) property.description = description;
     if (location !== undefined) property.location = location;
@@ -199,6 +193,12 @@ const updateProperty = async (req, res) => {
     if (propertyType !== undefined) property.propertyType = propertyType;
     if (bedrooms !== undefined) property.bedrooms = bedrooms;
     if (bathrooms !== undefined) property.bathrooms = bathrooms;
+
+    if (req.files && req.files.length > 0) {
+      property.images = req.files.map(
+        (file) => `/uploads/${file.filename}`
+      );
+    }
 
     const updatedProperty = await property.save();
 
@@ -217,7 +217,6 @@ const updateProperty = async (req, res) => {
 
 const deleteProperty = async (req, res) => {
   try {
-
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({
         message: "Invalid property ID",
@@ -232,7 +231,6 @@ const deleteProperty = async (req, res) => {
       });
     }
 
-    // Check if the logged-in user owns the property
     if (property.owner.toString() !== req.user.userId) {
       return res.status(403).json({
         message: "Access denied",
@@ -255,7 +253,6 @@ const deleteProperty = async (req, res) => {
 
 const updatePropertyApproval = async (req, res) => {
   try {
-
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({
         message: "Invalid property ID",
@@ -264,7 +261,6 @@ const updatePropertyApproval = async (req, res) => {
 
     const { status } = req.body;
 
-    // Check if status is valid
     if (!["approved", "rejected"].includes(status)) {
       return res.status(400).json({
         message: "Invalid approval status",
@@ -273,7 +269,6 @@ const updatePropertyApproval = async (req, res) => {
 
     const property = await Property.findById(req.params.id);
 
-    // Check if property exists
     if (!property) {
       return res.status(404).json({
         message: "Property not found",

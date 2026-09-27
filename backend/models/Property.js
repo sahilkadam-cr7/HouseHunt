@@ -44,6 +44,11 @@ const propertySchema = new mongoose.Schema(
       min: 0,
     },
 
+    images: {
+      type: [String],
+      default: [],
+    },
+
     owner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

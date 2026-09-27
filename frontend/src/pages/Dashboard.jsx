@@ -40,7 +40,7 @@ function Dashboard() {
       ) : (
         <div className="property-grid">
           {bookings.map((booking) => (
-            <div className="property-card" key={booking._id}>
+            <div className="property-card dashboard-booking-card" key={booking._id}>
               <h3>{booking.property?.title || "Property"}</h3>
               <p>
                 <strong>Location:</strong>{" "}
@@ -75,3 +75,4 @@ function Dashboard() {
 }
 
 export default Dashboard;
+
