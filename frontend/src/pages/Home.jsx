@@ -44,8 +44,10 @@ function Home() {
   return (
     <div className="container">
       <section className="hero">
-        <h1>Find Your Perfect Home</h1>
-        <p>Discover comfortable and affordable properties with HouseHunt.</p>
+        <div className="hero-content">
+          <h1>Find Your Perfect Home</h1>
+          <p>Discover comfortable and affordable properties with HouseHunt.</p>
+        </div>
       </section>
 
       {message && <p className="success">{message}</p>}
@@ -54,44 +56,52 @@ function Home() {
       <h2>Available Properties</h2>
 
       <div className="property-grid">
-        {properties.map((property) => (
+        {properties.map((property, index) => (
           <div className="property-card" key={property._id}>
-            <h3>{property.title}</h3>
-            <p>{property.description}</p>
+            <img
+              src={`/images/house${(index % 3) + 1}.jpg`}
+              alt={property.title}
+              className="property-image"
+            />
 
-            <p>
-              <strong>Location:</strong> {property.location}
-            </p>
+            <div className="property-content">
+              <h3>{property.title}</h3>
+              <p>{property.description}</p>
 
-            <p>
-              <strong>Type:</strong> {property.propertyType}
-            </p>
+              <p>
+                <strong>Location:</strong> {property.location}
+              </p>
 
-            <p>
-              <strong>Bedrooms:</strong> {property.bedrooms}
-            </p>
+              <p>
+                <strong>Type:</strong> {property.propertyType}
+              </p>
 
-            <p>
-              <strong>Bathrooms:</strong> {property.bathrooms}
-            </p>
+              <p>
+                <strong>Bedrooms:</strong> {property.bedrooms}
+              </p>
 
-            <p className="price">
-              &#8377;{property.price}/month
-            </p>
+              <p>
+                <strong>Bathrooms:</strong> {property.bathrooms}
+              </p>
 
-            <span className="status">
-              {property.approvalStatus}
-            </span>
+              <p className="price">
+                &#8377;{property.price}/month
+              </p>
 
-            {localStorage.getItem("token") &&
-              property.approvalStatus === "approved" && (
-                <button
-                  className="btn"
-                  onClick={() => setSelectedProperty(property)}
-                >
-                  Book Property
-                </button>
-              )}
+              <span className="status">
+                {property.approvalStatus}
+              </span>
+
+              {localStorage.getItem("token") &&
+                property.approvalStatus === "approved" && (
+                  <button
+                    className="btn"
+                    onClick={() => setSelectedProperty(property)}
+                  >
+                    Book Property
+                  </button>
+                )}
+            </div>
           </div>
         ))}
       </div>
@@ -102,6 +112,7 @@ function Home() {
 
           <form onSubmit={bookProperty}>
             <label>Start Date</label>
+
             <input
               type="date"
               value={dates.startDate}
@@ -112,6 +123,7 @@ function Home() {
             />
 
             <label>End Date</label>
+
             <input
               type="date"
               value={dates.endDate}

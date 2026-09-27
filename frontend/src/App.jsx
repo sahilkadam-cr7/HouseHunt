@@ -6,12 +6,14 @@ import Dashboard from "./pages/Dashboard";
 import AddProperty from "./pages/AddProperty";
 import Admin from "./pages/Admin";
 import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 import "./App.css";
 
 function App() {
   return (
     <BrowserRouter>
       <Navbar />
+
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
@@ -20,6 +22,8 @@ function App() {
         <Route path="/add-property" element={<AddProperty />} />
         <Route path="/admin" element={<Admin />} />
       </Routes>
+
+      <Footer />
     </BrowserRouter>
   );
 }

@@ -192,3 +192,55 @@ h2 {
     font-size: 32px;
   }
 }
+.property-image {
+  width: 100%;
+  height: 210px;
+  object-fit: cover;
+  display: block;
+}
+
+.property-content {
+  padding: 20px;
+}
+
+.property-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.hero {
+  min-height: 380px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)),
+    url("/images/house1.jpg");
+  background-size: cover;
+  background-position: center;
+  color: white;
+}
+
+.hero-content {
+  text-align: center;
+}
+
+.hero h1 {
+  font-size: 46px;
+}
+
+.hero p {
+  color: white;
+}
+
+.footer {
+  margin-top: 60px;
+  background: #1f2937;
+  color: white;
+  text-align: center;
+  padding: 25px 15px;
+}
+
+.footer p {
+  margin: 5px;
+}
