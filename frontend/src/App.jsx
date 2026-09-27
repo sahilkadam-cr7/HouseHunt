@@ -5,6 +5,7 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import AddProperty from "./pages/AddProperty";
 import Admin from "./pages/Admin";
+import PropertyDetails from "./pages/PropertyDetails";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import "./App.css";
@@ -21,6 +22,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/add-property" element={<AddProperty />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/property/:id" element={<PropertyDetails />} />
       </Routes>
 
       <Footer />

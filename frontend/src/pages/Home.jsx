@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import API from "../api";
 
 function Home() {
@@ -92,15 +93,24 @@ function Home() {
                 {property.approvalStatus}
               </span>
 
-              {localStorage.getItem("token") &&
-                property.approvalStatus === "approved" && (
-                  <button
-                    className="btn"
-                    onClick={() => setSelectedProperty(property)}
-                  >
-                    Book Property
-                  </button>
-                )}
+              <div>
+                <Link
+                  to={`/property/${property._id}`}
+                  className="btn secondary"
+                >
+                  View Details
+                </Link>
+
+                {localStorage.getItem("token") &&
+                  property.approvalStatus === "approved" && (
+                    <button
+                      className="btn"
+                      onClick={() => setSelectedProperty(property)}
+                    >
+                      Book Property
+                    </button>
+                  )}
+              </div>
             </div>
           </div>
         ))}
