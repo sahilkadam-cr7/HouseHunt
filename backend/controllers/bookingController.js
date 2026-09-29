@@ -6,21 +6,18 @@ const createBooking = async (req, res) => {
   try {
     const { property, startDate, endDate } = req.body;
 
-    // Check required fields
     if (!property || !startDate || !endDate) {
       return res.status(400).json({
         message: "Property, start date, and end date are required",
       });
     }
 
-    // Check if the property ID is valid
     if (!mongoose.Types.ObjectId.isValid(property)) {
       return res.status(400).json({
         message: "Invalid property ID",
       });
     }
 
-    // Check if the property exists
     const existingProperty = await Property.findById(property);
 
     if (!existingProperty) {
@@ -29,18 +26,15 @@ const createBooking = async (req, res) => {
       });
     }
 
-    // Only approved properties can be booked
     if (existingProperty.approvalStatus !== "approved") {
       return res.status(400).json({
         message: "Property is not approved for booking",
       });
     }
 
-    // Convert dates to Date objects
     const bookingStartDate = new Date(startDate);
     const bookingEndDate = new Date(endDate);
 
-    // Check if dates are valid
     if (
       Number.isNaN(bookingStartDate.getTime()) ||
       Number.isNaN(bookingEndDate.getTime())
@@ -50,7 +44,6 @@ const createBooking = async (req, res) => {
       });
     }
 
-    // End date must be after start date
     if (bookingEndDate <= bookingStartDate) {
       return res.status(400).json({
         message: "End date must be after start date",
@@ -70,7 +63,6 @@ const createBooking = async (req, res) => {
       });
     }
 
-    // Create booking
     const booking = await Booking.create({
       property,
       user: req.user.userId,
@@ -95,6 +87,7 @@ const getMyBookings = async (req, res) => {
   try {
     const bookings = await Booking.find({
       user: req.user.userId,
+      status: { $ne: "cancelled" },
     })
       .populate("property")
       .sort({ createdAt: -1 });
@@ -113,7 +106,9 @@ const getMyBookings = async (req, res) => {
 
 const getAllBookings = async (req, res) => {
   try {
-    const bookings = await Booking.find()
+    const bookings = await Booking.find({
+      status: { $nin: ["rejected", "cancelled"] },
+    })
       .populate("property")
       .populate("user", "name email role")
       .sort({ createdAt: -1 });
@@ -132,6 +127,12 @@ const getAllBookings = async (req, res) => {
 
 const updateBookingStatus = async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({
+        message: "Invalid booking ID",
+      });
+    }
+
     const { status } = req.body;
 
     if (!status || !["approved", "rejected"].includes(status)) {
@@ -181,15 +182,9 @@ const cancelBooking = async (req, res) => {
       });
     }
 
-    if (booking.user.toString() !== req.user.userId) {
+    if (booking.user.toString() !== req.user.userId.toString()) {
       return res.status(403).json({
         message: "You can only cancel your own booking",
-      });
-    }
-
-    if (booking.status === "cancelled") {
-      return res.status(400).json({
-        message: "Booking is already cancelled",
       });
     }
 
@@ -199,13 +194,10 @@ const cancelBooking = async (req, res) => {
       });
     }
 
-    booking.status = "cancelled";
-
-    await booking.save();
+    await booking.deleteOne();
 
     res.status(200).json({
-      message: "Booking cancelled successfully",
-      booking,
+      message: "Booking cancelled and removed successfully",
     });
   } catch (error) {
     console.error("Cancel booking error:", error.message);

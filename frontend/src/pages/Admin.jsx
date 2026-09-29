@@ -9,7 +9,7 @@ function Admin() {
   const loadData = async () => {
     try {
       const [propertyRes, bookingRes] = await Promise.all([
-        API.get("/properties"),
+        API.get("/properties/admin/all"),
         API.get("/bookings"),
       ]);
 
@@ -138,3 +138,4 @@ function Admin() {
 }
 
 export default Admin;
+

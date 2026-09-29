@@ -6,16 +6,15 @@ const sharp = require("sharp");
 const {
   createProperty,
   getProperties,
+  getMyProperties,
+  getAllPropertiesForAdmin,
   getPropertyById,
   updateProperty,
   deleteProperty,
   updatePropertyApproval,
 } = require("../controllers/propertyController");
 
-const {
-  protect,
-  authorize,
-} = require("../middleware/authMiddleware");
+const { protect, authorize } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
@@ -122,7 +121,21 @@ router.post(
   createProperty
 );
 
+router.get(
+  "/my",
+  protect,
+  getMyProperties
+);
+
+router.get(
+  "/admin/all",
+  protect,
+  authorize("admin"),
+  getAllPropertiesForAdmin
+);
+
 router.get("/", getProperties);
+
 router.get("/:id", getPropertyById);
 
 router.put(

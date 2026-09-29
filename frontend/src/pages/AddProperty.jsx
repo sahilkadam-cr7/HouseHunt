@@ -179,7 +179,7 @@ function AddProperty() {
         <p className="image-upload-instructions">
           Upload landscape images only. Each image must be at least
           1200 x 800 pixels and maximum 5 MB. You can upload up to
-          10 images.
+          10 images. Press Ctrl + click image to select multiple images.
         </p>
 
         <input
@@ -203,5 +203,6 @@ function AddProperty() {
 }
 
 export default AddProperty;
+
 
 

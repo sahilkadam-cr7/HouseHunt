@@ -27,9 +27,8 @@ const createProperty = async (req, res) => {
       });
     }
 
-    const images = req.files
-      ? req.files.map((file) => `/uploads/${file.filename}`)
-      : [];
+    const images =
+      req.files?.map((file) => `/uploads/${file.filename}`) || [];
 
     const property = await Property.create({
       title,
@@ -39,8 +38,8 @@ const createProperty = async (req, res) => {
       propertyType,
       bedrooms,
       bathrooms,
-      images,
       owner: req.user.userId,
+      images,
     });
 
     res.status(201).json({
@@ -51,7 +50,7 @@ const createProperty = async (req, res) => {
     console.error("Create property error:", error.message);
 
     res.status(500).json({
-      message: "Server error",
+      message: error.message,
     });
   }
 };
@@ -61,53 +60,47 @@ const getProperties = async (req, res) => {
     const {
       search,
       location,
+      propertyType,
       minPrice,
       maxPrice,
-      propertyType,
     } = req.query;
 
-    let query = {};
+    const filter = {
+      approvalStatus: "approved",
+    };
 
     if (search) {
-      query.$or = [
+      filter.$or = [
         { title: { $regex: search, $options: "i" } },
         { description: { $regex: search, $options: "i" } },
-        { location: { $regex: search, $options: "i" } },
       ];
     }
 
     if (location) {
-      query.location = {
-        $regex: location,
-        $options: "i",
-      };
+      filter.location = { $regex: location, $options: "i" };
     }
 
-    if (minPrice) {
-      query.price = {
-        ...query.price,
+    if (propertyType) {
+      filter.propertyType = propertyType;
+    }
+
+    if (minPrice !== undefined && minPrice !== "") {
+      filter.price = {
+        ...filter.price,
         $gte: Number(minPrice),
       };
     }
 
-    if (maxPrice) {
-      query.price = {
-        ...query.price,
+    if (maxPrice !== undefined && maxPrice !== "") {
+      filter.price = {
+        ...filter.price,
         $lte: Number(maxPrice),
       };
     }
 
-    if (propertyType) {
-      query.propertyType = {
-        $regex: propertyType,
-        $options: "i",
-      };
-    }
-
-    const properties = await Property.find(query).populate(
-      "owner",
-      "name email"
-    );
+    const properties = await Property.find(filter)
+      .populate("owner", "name email")
+      .sort({ createdAt: -1 });
 
     res.status(200).json({
       properties,
@@ -116,25 +109,61 @@ const getProperties = async (req, res) => {
     console.error("Get properties error:", error.message);
 
     res.status(500).json({
-      message: "Server error",
+      message: error.message,
+    });
+  }
+};
+
+const getMyProperties = async (req, res) => {
+  try {
+    const properties = await Property.find({
+      owner: req.user.userId,
+    })
+      .populate("owner", "name email")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      properties,
+    });
+  } catch (error) {
+    console.error("Get my properties error:", error.message);
+
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
+const getAllPropertiesForAdmin = async (req, res) => {
+  try {
+    const properties = await Property.find({
+      approvalStatus: { $ne: "rejected" },
+    })
+      .populate("owner", "name email")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      properties,
+    });
+  } catch (error) {
+    console.error("Get admin properties error:", error.message);
+
+    res.status(500).json({
+      message: error.message,
     });
   }
 };
 
 const getPropertyById = async (req, res) => {
   try {
-    const { id } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({
         message: "Invalid property ID",
       });
     }
 
-    const property = await Property.findById(id).populate(
-      "owner",
-      "name email"
-    );
+    const property = await Property.findById(req.params.id)
+      .populate("owner", "name email");
 
     if (!property) {
       return res.status(404).json({
@@ -142,14 +171,12 @@ const getPropertyById = async (req, res) => {
       });
     }
 
-    res.status(200).json({
-      property,
-    });
+    res.status(200).json(property);
   } catch (error) {
     console.error("Get property error:", error.message);
 
     res.status(500).json({
-      message: "Server error",
+      message: error.message,
     });
   }
 };
@@ -170,9 +197,9 @@ const updateProperty = async (req, res) => {
       });
     }
 
-    if (property.owner.toString() !== req.user.userId) {
+    if (property.owner.toString() !== req.user.userId.toString()) {
       return res.status(403).json({
-        message: "Access denied",
+        message: "Only the property owner can edit this property",
       });
     }
 
@@ -186,13 +213,13 @@ const updateProperty = async (req, res) => {
       bathrooms,
     } = req.body;
 
-    if (title !== undefined) property.title = title;
-    if (description !== undefined) property.description = description;
-    if (location !== undefined) property.location = location;
-    if (price !== undefined) property.price = price;
-    if (propertyType !== undefined) property.propertyType = propertyType;
-    if (bedrooms !== undefined) property.bedrooms = bedrooms;
-    if (bathrooms !== undefined) property.bathrooms = bathrooms;
+    property.title = title;
+    property.description = description;
+    property.location = location;
+    property.price = price;
+    property.propertyType = propertyType;
+    property.bedrooms = bedrooms;
+    property.bathrooms = bathrooms;
 
     if (req.files && req.files.length > 0) {
       property.images = req.files.map(
@@ -200,17 +227,17 @@ const updateProperty = async (req, res) => {
       );
     }
 
-    const updatedProperty = await property.save();
+    await property.save();
 
     res.status(200).json({
       message: "Property updated successfully",
-      property: updatedProperty,
+      property,
     });
   } catch (error) {
     console.error("Update property error:", error.message);
 
     res.status(500).json({
-      message: "Server error",
+      message: error.message,
     });
   }
 };
@@ -231,9 +258,9 @@ const deleteProperty = async (req, res) => {
       });
     }
 
-    if (property.owner.toString() !== req.user.userId) {
+    if (property.owner.toString() !== req.user.userId.toString()) {
       return res.status(403).json({
-        message: "Access denied",
+        message: "Only the property owner can delete this property",
       });
     }
 
@@ -246,7 +273,7 @@ const deleteProperty = async (req, res) => {
     console.error("Delete property error:", error.message);
 
     res.status(500).json({
-      message: "Server error",
+      message: error.message,
     });
   }
 };
@@ -284,10 +311,10 @@ const updatePropertyApproval = async (req, res) => {
       property,
     });
   } catch (error) {
-    console.error("Update property approval error:", error.message);
+    console.error("Property approval error:", error.message);
 
     res.status(500).json({
-      message: "Server error",
+      message: error.message,
     });
   }
 };
@@ -295,6 +322,8 @@ const updatePropertyApproval = async (req, res) => {
 module.exports = {
   createProperty,
   getProperties,
+  getMyProperties,
+  getAllPropertiesForAdmin,
   getPropertyById,
   updateProperty,
   deleteProperty,
