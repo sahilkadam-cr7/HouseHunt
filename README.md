@@ -1,9 +1,5 @@
 HouseHunt MERN
 
-Live Links
-Frontend: 
-Backend: 
-
 Video:
 https://drive.google.com/drive/folders/1dtjH9VDbtjhrPQpZSScTfI9hjzS-jkoU?usp=drive_link
 
