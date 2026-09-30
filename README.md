@@ -1,5 +1,8 @@
 HouseHunt MERN
 
+Backend :- https://househunt-backend-cvna.onrender.com
+Frontend :- https://househunt-frontend-oovk.onrender.com
+
 Video:
 https://drive.google.com/drive/folders/1dtjH9VDbtjhrPQpZSScTfI9hjzS-jkoU?usp=drive_link
 
